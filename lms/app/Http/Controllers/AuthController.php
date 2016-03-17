@@ -18,7 +18,7 @@ Class AuthController extends Controller
 	{
 		$this->validate($request, [
 			'email' => 'required|unique:users|email',
-			'username' => 'required|unique:users|alpha_dash|max:20',
+			'username' => 'required|max:30',
 			'password' => 'required|min:6',
 		]);
 		
@@ -35,9 +35,8 @@ Class AuthController extends Controller
 	public function getSignin(Session $session)
 	{
 		$view = view ('auth.signin',['session'=>$session]);
-			$session->clear();
-			var_dump('Session cleared');
-	    	return	$view;
+		$session->clear();
+	    return	$view;
 	}
 
 	public function postSignin(Request $request, Session $session)
@@ -75,6 +74,7 @@ Class AuthController extends Controller
 	public function postSignout(Session $session)
 	{
 		$session->clear();
+		Auth::logout();
 		return redirect()->route('home');
 	}
 }

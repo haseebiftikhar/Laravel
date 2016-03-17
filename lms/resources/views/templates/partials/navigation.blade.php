@@ -14,8 +14,8 @@
 						<input type="text" name="querry" class="form-control" placeholder="Find people">
 					</div>
 					<button type="submit" class="btn btn-default">Search</button>
-				</form>
-			@endif-->
+				</form>-->
+			@endif
 				<ul class="nav navbar-nav navbar-right">
 					@if(Auth::Check())
 						<li><a href="#">{{Auth::user()->getnameOrUsername()}}</a></li>
