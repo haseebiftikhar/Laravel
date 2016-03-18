@@ -17,8 +17,8 @@ class Client extends Model implements AuthenticatableContract
         'email',
         'username',
         'password',
-        'first_name',
-        'last_name',
+        'device_id',
+        'confirmation_code',
     ];
 
     protected $hidden = [

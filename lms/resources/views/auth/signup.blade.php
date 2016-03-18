@@ -33,6 +33,12 @@
 			</div>
 			<input type="hidden" name="_token" value="{{ Session::token() }}"> 
 		</form>
+
+		@if ($session->has('info'))
+				<div class="alert alert-info" role="alert">
+					{{ $session->remove('info') }}
+				</div>
+		@endif
 	</div>
 	</div>
 @stop

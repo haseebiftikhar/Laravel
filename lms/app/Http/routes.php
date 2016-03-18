@@ -1,6 +1,25 @@
 <?php
 use Symfony\Component\HttpFoundation\Session\Session;
 
+
+Route::get('sendmail',function(){
+	 $data = array(
+        'name' => "Learning Laravel",
+    );
+
+	  Mail::raw("https://laracasts.com/discuss/channels/laravel/problem-can-not-send-message-without-a-sender-address?page=3", function ($message) {
+            $message->to('*******@*******.com', 'Jim')
+              ->subject('LaravelGMail App!');
+        });
+
+
+    var_dump("Your email has been sent successfully");
+});
+
+Route::get('/confirmation/{confirmation_code}',[
+	'uses' => '\App\Http\Controllers\AuthController@confirm',
+	]);
+
 Route::get('/guzzle1', [
 	'uses' => 'GuzzleController@get_git',
 	]);
@@ -60,11 +79,8 @@ Route::get('users/{username}', function($username)
     echo $res->getBody();
 });
 
-Route::get('/alert', function (Session $session) {
-	$session->set('info','Alert!');
-	return redirect()->route('home');
-	});
 
+/*=====================================================================*/
 Route::get('/', function () {
     return redirect()->route('home');
 	});
@@ -74,14 +90,31 @@ Route::get('/home', [
 	'as' => 'home',
 	]);
 
+
 Route::get('/signup', [
 	'uses' => '\App\Http\Controllers\AuthController@getSignup',
 	'as' => 'auth.signup'
 	]);
-
 Route::post('/signup',[
 	'uses' => '\App\Http\Controllers\AuthController@postSignup'
 	]);
+
+
+/*	Route::post('/signup',[
+	'uses' => '\App\Http\Controllers\RegistrationController@store'
+	]);*/
+
+/*=====================================================================*/
+Route::get('/alert', function (Session $session) {
+	$session->set('info','Alert!');
+	return redirect()->route('home');
+	});
+
+
+
+
+
+
 
 Route::get('/signin', [
 	'uses' => '\App\Http\Controllers\AuthController@getSignin',
