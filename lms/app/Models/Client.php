@@ -17,6 +17,7 @@ class Client extends Model implements AuthenticatableContract
         'email',
         'username',
         'password',
+        'confirmed',
         'device_id',
         'confirmation_code',
     ];

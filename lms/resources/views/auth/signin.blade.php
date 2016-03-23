@@ -32,7 +32,7 @@
 			<div class="form-group">
 				<button type="submit" class="btn btn-default">Sign in</button>
 			</div>
-
+			<a href="{{ route('auth.forgot') }}"> Forgot Password</a>
 			
 
 			<input type="hidden" name="_token" value="{{ Session::token() }}"> 

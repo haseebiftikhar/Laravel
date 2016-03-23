@@ -18,8 +18,8 @@
 			@endif
 				<ul class="nav navbar-nav navbar-right">
 					@if(Auth::Check())
-						<li><a href="#">{{Auth::user()->getnameOrUsername()}}</a></li>
-						<li><a href="#">Update profile</a></li>
+						<li><a href="{{ route('dashbord') }}">{{Auth::user()->getnameOrUsername()}}</a></li>
+						<li><a href="#">Add new device</a></li>
 						<li><a href="{{ route('signout') }}">Sign out</a></li>
 					@else
 						<li><a href="{{ route('auth.signup') }}">Sign up</a></li>

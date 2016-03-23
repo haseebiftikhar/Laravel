@@ -17,9 +17,7 @@ Class AuthController extends Controller
 
 	public function getSignin(Session $session)
 	{
-		//$view = view ('auth.signin',['session'=>$session]);
-		//$session->clear();
-	    return	view ('auth.signin',['session'=>$session]);
+		return	view ('auth.signin',['session'=>$session]);
 	}
 
 	
@@ -30,40 +28,24 @@ Class AuthController extends Controller
 			'password' => 'required',
 		]);
 
-		// $credentials = [
-  //           'email' => $request->input('email'),
-  //           'password' => $request->input('password'),
-  //           'confirmed' => 1,
-  //       ];
-// HERE ======================================================================
-        /*if ( ! Auth::attempt($credentials))
-        {
-            // return Redirect::back()
-            //     ->withInput()
-            //     ->withErrors([
-            //         'credentials' => 'We were unable to sign you in.'
-            //     ]);
-            var_dump('ERROR');
-            \Flash::message('Welcome back!');
-            exit();
-        }*/
-        $confirmed = Client::whereEmail($request->input('email'))->first();
-        if (!$confirmed->confirmed ==1){
-        	$session->set('info' , 'Could not sign in Please check you inbox for confirmation First!!'); 
-			return redirect()->route('auth.signin');
-        }
 
-		if (!\Auth::attempt($request->only(['email','password']),$request->has('remember'))) {
-			$session->set('info' , 'Could not sign in Invalid Details'); 
-			return redirect()->route('auth.signin');
-		}
-//============================================================================
+		if (!Auth::attempt([
+				'email'=>$request->input('email'),
+				'password'=>$request->input('password'),
+				'confirmed'=>1
+			])) 
+			{
+				$session->set('info' , 'Could not sign in Invalid Details'); 
+				return redirect()->route('auth.signin');
+				var_dump('Exit in Authcontroller !Auth check');
+	            exit();
+			}
+
 		//Setting Sessions
 		$session->set('email',$request->email);
 		$session->set('password',$request->password);
 
 		$session->set('info' , 'You are Signed in');
-		//return redirect()->route('dashbord');
 		return view('dashbord',['session'=>$session]);
 	}
 
@@ -82,7 +64,7 @@ Class AuthController extends Controller
 		Client::create([
 			'email'=> $request->input('email'),
 			'username'=>$request->input('username'),
-			'password'=>$request->input('password'),
+			'password'=>bcrypt($request->input('password')),
 			'confirmation_code'=>$confirmation_code,
 		]);
 
@@ -117,8 +99,7 @@ Class AuthController extends Controller
         $user->confirmation_code = null;
         $user->save();
 
-        //$session = array('info' => 'Done Confirmation');
-        $session->set('info' , 'Done Confirmation');
+        $session->set('info' , 'Now you may log in');
 		return view('auth.signin',['session'=>$session]);
 	}
 
@@ -140,5 +121,94 @@ Class AuthController extends Controller
 		$session->clear();
 		Auth::logout();
 		return redirect()->route('home');
+	}
+
+	public function getForgot( Session $session)
+	{
+		//var_dump('Forgot my password');
+		return view('auth.forgot',['session'=>$session]);
+	}
+
+	public function postForgot(Request $request, Session $session)
+	{
+		$this->validate($request, [
+			'email' => 'required|email',
+		]);
+
+		$email = Client::where('email',$request->input('email'))->first();
+		if(!$email)
+		{
+			$session->set('info' , 'Invalid email !!');
+			return view('auth.forgot',['session'=>$session]);
+		}
+		
+		$confirmation_code = str_random(30);
+		$user = $request->input('email');
+
+		Client::where('email',$request->input('email'))
+				->update(['confirmation_code'=>$confirmation_code]);
+
+		\Mail::raw("For reset Password of your account kindly run the given url in your web browser:
+
+			http://localhost:8000/reset/".$confirmation_code."
+
+			Best Regards
+			Happy Coding!!", function ($message) use ($user){
+            $message->to($user, 'Beloved User')
+        		    ->subject('LaravelGMail App!');
+        });
+
+        $session->set('info' , 'An email to reset your password is send to you!!');
+		return view('home',['session'=>$session]);
+		
+	}
+
+	public function resetPassword($confirmation_code, Session $session)
+	{
+
+		if (! $confirmation_code) {
+			//throw new InvalidConfirmationCodeException;
+			$session->set('info' , 'Link Expired!!');
+			return view('home',['session'=>$session]);
+		}
+		//dd($confirmation_code);
+		$user = Client::whereConfirmationCode($confirmation_code)->first();
+		
+		if ( ! $user)
+        {
+            //throw new InvalidConfirmationCodeException;
+            $session->set('info' , 'Link Expired!!');
+			return view('home',['session'=>$session]);
+        }
+        /*$user->confirmed = 1;
+        $user->confirmation_code = null;
+        $user->save();*/
+        $session->set('confirmation_code' , $confirmation_code);
+        $session->set('info' , 'Reset password');
+		return view('auth.passwordreset',['session'=>$session]);
+	}
+	public function postResetPassword(Request $request,Session $session)
+	{
+		$this->validate($request, [
+			'password1' => 'required|min:6',
+			'password2' => 'required|min:6',
+		]);
+		if ($request->input('password1') !== $request->input('password2')) {
+			$session->set('info' , 'Passwords doesnot match.');
+			return view('auth.passwordreset',['session'=>$session]);
+		}
+
+		$confirmation_code = $session->get('confirmation_code');
+		$user = Client::whereConfirmationCode($confirmation_code)->first();
+		if ( ! $user)
+        {
+            //throw new InvalidConfirmationCodeException;
+            $session->set('info' , 'Link Expired!!');
+			return view('home',['session'=>$session]);
+        }
+        $user->password = bcrypt($request->input('password1'));
+        $user->save();
+        $session->set('info' , 'Now you may log in');
+		return view('auth.signin',['session'=>$session]);
 	}
 }
