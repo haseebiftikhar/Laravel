@@ -207,6 +207,7 @@ Class AuthController extends Controller
 			return view('home',['session'=>$session]);
         }
         $user->password = bcrypt($request->input('password1'));
+        $user->confirmation_code = null;
         $user->save();
         $session->set('info' , 'Now you may log in');
 		return view('auth.signin',['session'=>$session]);
